@@ -1,0 +1,232 @@
+.brand-page {
+  padding: 0 0 32px;
+  color: #111827;
+}
+
+.brand-page-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 0 20px;
+  border-bottom: 1px solid #dbe1e8;
+}
+
+.brand-page-heading h1 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.brand-page-heading p {
+  margin: 6px 0 0;
+  color: #94a3b8;
+  font-size: 16px;
+}
+
+.brand-add-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 191px;
+  min-height: 47px;
+  justify-content: center;
+  border: 0;
+  border-radius: 24px;
+  background: #29449a;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.brand-add-button:hover,
+.brand-add-button:focus {
+  background: #20377e;
+}
+
+.brand-toolbar {
+  min-height: 87px;
+  padding: 20px 0;
+  color: #111827;
+  font-size: 16px;
+}
+
+.brand-page-size {
+  width: 66px;
+  min-height: 39px;
+  border-color: #ebe5df;
+  border-radius: 9px;
+}
+
+.brand-search-label {
+  float: left;
+  margin: 8px 10px 0 0;
+}
+
+.brand-search-input {
+  float: right;
+  width: min(276px, 70%);
+  min-height: 39px;
+  border-color: #ebe5df;
+  border-radius: 9px;
+}
+
+.brand-table {
+  --bs-table-border-color: #ebe5df;
+  color: #111827;
+  font-size: 16px;
+}
+
+.brand-table thead th {
+  padding: 17px 24px;
+  border-bottom-width: 1px;
+  background: #faf9f7;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.brand-table thead th span {
+  margin-right: 28px;
+}
+
+.brand-table thead th svg {
+  color: #d4dce6;
+  font-size: 12px;
+}
+
+.brand-table tbody td {
+  height: 80px;
+  padding: 14px 24px;
+  border-bottom-color: #ebe5df;
+  white-space: nowrap;
+}
+
+.brand-table tbody tr:hover {
+  background: #fcfcfb;
+}
+
+.brand-image-column,
+.brand-table tbody td:first-child {
+  width: 145px;
+}
+
+.brand-actions-column,
+.brand-table tbody td:last-child {
+  width: 185px;
+}
+
+.brand-table-logo,
+.brand-image-placeholder {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: #f8fafc;
+  object-fit: contain;
+}
+
+.brand-image-placeholder {
+  color: #fff;
+  background: #9aacca;
+  font-size: 19px;
+}
+
+.brand-name-cell {
+  font-weight: 700;
+}
+
+.brand-slug-cell {
+  color: #ff2f72;
+  font-size: 14px;
+}
+
+.brand-status-pill {
+  display: inline-block;
+  min-width: 78px;
+  padding: 4px 13px;
+  border-radius: 20px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.brand-status-pill.success {
+  border: 1px solid #9be7c9;
+  color: #008f6b;
+  background: #effdf7;
+}
+
+.brand-status-pill.secondary {
+  border: 1px solid #d5dce5;
+  color: #64748b;
+  background: #f1f5f9;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.brand-action-button {
+  display: inline-flex;
+  width: 43px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d5dce5;
+  border-radius: 9px;
+  background: #fff;
+  font-size: 18px;
+}
+
+.brand-action-button.edit {
+  color: #334155;
+}
+
+.brand-action-button.delete {
+  border-color: #ff9b9f;
+  color: #ff454c;
+}
+
+.brand-action-button:hover,
+.brand-action-button:focus {
+  background: #f8fafc;
+}
+
+.brand-empty-state {
+  padding: 48px 24px;
+  border-top: 1px solid #ebe5df;
+  color: #64748b;
+  text-align: center;
+}
+
+@media (max-width: 767.98px) {
+  .brand-page-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .brand-add-button {
+    width: 100%;
+  }
+
+  .brand-search-label {
+    margin-left: 0;
+  }
+
+  .brand-search-input {
+    width: calc(100% - 65px);
+  }
+
+  .brand-table thead th,
+  .brand-table tbody td {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
