@@ -1,0 +1,273 @@
+.banners-page {
+  padding: 0 0 32px;
+  color: #2a2f36;
+}
+
+.banners-page-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 0 20px;
+  border-bottom: 1px solid #dfe5e9;
+  margin-bottom: 8px;
+}
+
+.banners-page-heading h1 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.banners-page-heading p {
+  margin: 6px 0 0;
+  color: #94a3b8;
+  font-size: 15px;
+}
+
+.banners-add-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 176px;
+  min-height: 44px;
+  justify-content: center;
+  border: 0;
+  border-radius: 10px;
+  background: #1d4a8f;
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: none;
+}
+
+.banners-add-button:hover,
+.banners-add-button:focus {
+  background: #173e78;
+  color: #fff;
+}
+
+.banners-toolbar {
+  min-height: 82px;
+  padding: 18px 0 10px;
+  color: #111827;
+  font-size: 15px;
+}
+
+.banners-show-block {
+  color: #1f2937;
+}
+
+.banners-page-size {
+  width: 66px;
+  min-height: 39px;
+  border-color: #dfe5e9;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.banners-search-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.banners-search-label {
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.banners-search-input {
+  width: min(276px, 100%);
+  min-height: 39px;
+  border-color: #dfe5e9;
+  border-radius: 9px;
+}
+
+.banners-table-wrap {
+  border: 1px solid #e5e7eb;
+  border-radius: 0;
+  background: #f9f9f7;
+}
+
+.banners-table {
+  --bs-table-border-color: #e7e5e4;
+  color: #1f2937;
+  font-size: 16px;
+  margin-bottom: 0;
+}
+
+.banners-table thead th {
+  padding: 15px 18px;
+  border-bottom-width: 1px;
+  background: #f6f3f1;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.banners-table thead th span {
+  margin-right: 18px;
+}
+
+.banners-table thead th svg {
+  color: #c7cdd6;
+  font-size: 12px;
+}
+
+.banners-table tbody td {
+  min-height: 88px;
+  padding: 14px 18px;
+  border-bottom-color: #e7e5e4;
+  white-space: nowrap;
+  vertical-align: middle;
+  font-size: 15px;
+}
+
+.banners-table tbody tr:hover {
+  background: #fbfaf9;
+}
+
+.banners-image-cell {
+  width: 170px;
+}
+
+.banners-thumb {
+  width: 160px;
+  height: 70px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #5a2a1d, #1a1619);
+}
+
+.banners-thumb.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.85);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
+}
+
+.banners-title-cell {
+  font-weight: 700;
+}
+
+.banners-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.banners-action-button {
+  display: inline-flex;
+  min-width: 54px;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d7dfe9;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  color: #334155;
+  padding: 6px 12px;
+}
+
+.banners-action-button.edit {
+  border-color: #d1d8e0;
+  color: #334155;
+}
+
+.banners-action-button.delete {
+  border-color: #ff7b83;
+  color: #f0444e;
+}
+
+.banners-action-button.edit:hover,
+.banners-action-button.edit:focus {
+  background: #f8fafc;
+}
+
+.banners-action-button.delete:hover,
+.banners-action-button.delete:focus {
+  background: #fff5f5;
+}
+
+.banners-empty-state {
+  padding: 22px 16px;
+  text-align: center;
+  color: #64748b;
+}
+
+.banners-pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 18px;
+  color: #2a2f36;
+  font-size: 14px;
+}
+
+.banners-pagination {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.banners-page-btn {
+  min-width: 94px;
+  min-height: 36px;
+  border-radius: 6px;
+  border: 1px solid #dfe5e9;
+  background: #fff;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.banners-page-btn.active {
+  min-width: 42px;
+  background: #1d4a8f;
+  color: #fff;
+  border-color: #1d4a8f;
+}
+
+.banners-page-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 767.98px) {
+  .banners-page-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .banners-add-button {
+    width: 100%;
+  }
+
+  .banners-search-wrap {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .banners-search-input {
+    width: 100%;
+  }
+
+  .banners-pagination-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   FaBold,
+  FaCheck,
   FaChevronDown,
   FaImage,
   FaItalic,
@@ -9,44 +10,52 @@ import {
   FaListUl,
   FaPlus,
   FaSave,
+  FaTimes,
   FaTrash,
   FaUnderline,
 } from "react-icons/fa";
 import "./CreateProduct.css";
 
-const CreateProduct = ({ onDiscard, onQuickAddBrand, brands = [], categories = [] }) => {
-  const [productType, setProductType] = useState("Simple product");
-  const [status, setStatus] = useState("Active");
-  const [productName, setProductName] = useState("");
-  const [imagePreview, setImagePreview] = useState("");
-  const [isFeatured, setIsFeatured] = useState(false);
-  const [faqs, setFaqs] = useState([]);
+const API_ORIGIN = "http://localhost:5000";
+
+const CreateProduct = ({ onDiscard, onQuickAddBrand, onSave, initialData = null, brands = [], categories = [] }) => {
+  const [productType, setProductType] = useState(initialData?.type || "Simple product");
+  const [status, setStatus] = useState(initialData?.status || "Active");
+  const [productName, setProductName] = useState(initialData?.name || "");
+  const [imagePreview, setImagePreview] = useState(initialData?.featuredImage
+    ? `${API_ORIGIN}/uploads/product/${encodeURIComponent(initialData.featuredImage)}`
+    : "");
+  const [featuredImage, setFeaturedImage] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveFeedback, setSaveFeedback] = useState(null);
+  const [isFeatured, setIsFeatured] = useState(initialData?.isFeatured || false);
+  const [faqs, setFaqs] = useState(initialData?.faqs || []);
   const [media, setMedia] = useState([]);
-  const [chargeTax, setChargeTax] = useState(true);
-  const [taxClass, setTaxClass] = useState("Default Tax Class");
-  const [selectedAgeGroups, setSelectedAgeGroups] = useState([]);
+  const [chargeTax, setChargeTax] = useState(initialData?.chargeTax ?? true);
+  const [taxClass, setTaxClass] = useState(initialData?.taxClass || "Default Tax Class");
+  const [selectedAgeGroups, setSelectedAgeGroups] = useState(initialData?.ageGroups || []);
   const [searchListingOpen, setSearchListingOpen] = useState(false);
   const [tagInput, setTagInput] = useState("");
-  const [selectedTags, setSelectedTags] = useState([]);
+  const [selectedTags, setSelectedTags] = useState(initialData?.tags || []);
   const [tagsOpen, setTagsOpen] = useState(false);
-  const [selectedBrand, setSelectedBrand] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState(String(initialData?.brandId || ""));
   const [quickAddBrandOpen, setQuickAddBrandOpen] = useState(false);
   const [quickBrandName, setQuickBrandName] = useState("");
   const [quickBrandSaving, setQuickBrandSaving] = useState(false);
   const [quickBrandError, setQuickBrandError] = useState("");
   const [availableBrands, setAvailableBrands] = useState(brands);
-  const [sku, setSku] = useState("");
-  const [barcode, setBarcode] = useState("");
-  const [trackQuantity, setTrackQuantity] = useState(true);
-  const [quantity, setQuantity] = useState("0");
-  const [isPhysicalProduct, setIsPhysicalProduct] = useState(true);
-  const [weight, setWeight] = useState("0");
-  const [weightUnit, setWeightUnit] = useState("kg");
-  const [contentType, setContentType] = useState("Non Document");
-  const [totalItems, setTotalItems] = useState("1");
-  const [dimensions, setDimensions] = useState({ length: "0", width: "0", height: "0" });
-  const [dimensionUnit, setDimensionUnit] = useState("cm");
-  const [declaredValue, setDeclaredValue] = useState("0");
+  const [sku, setSku] = useState(initialData?.sku || "");
+  const [barcode, setBarcode] = useState(initialData?.barcode || "");
+  const [trackQuantity, setTrackQuantity] = useState(initialData?.trackQuantity ?? true);
+  const [quantity, setQuantity] = useState(String(initialData?.quantity ?? 0));
+  const [isPhysicalProduct, setIsPhysicalProduct] = useState(initialData?.isPhysicalProduct ?? true);
+  const [weight, setWeight] = useState(String(initialData?.weight ?? 0));
+  const [weightUnit, setWeightUnit] = useState(initialData?.weightUnit || "kg");
+  const [contentType, setContentType] = useState(initialData?.contentType || "Non Document");
+  const [totalItems, setTotalItems] = useState(String(initialData?.totalItems ?? 1));
+  const [dimensions, setDimensions] = useState(initialData?.dimensions || { length: "0", width: "0", height: "0" });
+  const [dimensionUnit, setDimensionUnit] = useState(initialData?.dimensions?.unit || "cm");
+  const [declaredValue, setDeclaredValue] = useState(String(initialData?.declaredValue ?? 0));
   const tagsRef = useRef(null);
 
   const ageGroups = [
@@ -106,7 +115,7 @@ const CreateProduct = ({ onDiscard, onQuickAddBrand, brands = [], categories = [
       setQuickBrandSaving(false);
     }
   };
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState([]);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState((initialData?.categoryIds || []).map(String));
 
   const parentNames = [...new Set(categories.flatMap((category) => {
     const parentName = category.parentCategory || category.parent;
@@ -150,11 +159,68 @@ const CreateProduct = ({ onDiscard, onQuickAddBrand, brands = [], categories = [
   const handleImageChange = (event) => {
     const selectedImage = event.target.files?.[0];
     if (!selectedImage) return;
+    setFeaturedImage(selectedImage);
     setImagePreview(URL.createObjectURL(selectedImage));
   };
 
   const handleMediaChange = (event) => {
     setMedia(Array.from(event.target.files || []));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!onSave) return;
+
+    const form = event.currentTarget;
+    const getValue = (id) => form.querySelector(`#${id}`)?.value || "";
+    const product = {
+      name: productName,
+      featuredImage: initialData?.featuredImage || "",
+      type: productType,
+      description: form.querySelector("#product-description")?.innerHTML || "",
+      status,
+      sku,
+      barcode,
+      trackQuantity,
+      quantity: Number(quantity) || 0,
+      price: Number(getValue("product-price")) || 0,
+      compareAtPrice: Number(getValue("compare-price")) || 0,
+      costPerItem: Number(getValue("cost-per-item")) || 0,
+      chargeTax,
+      taxClass,
+      isFeatured,
+      brandId: selectedBrand,
+      categoryIds: selectedCategoryIds,
+      tags: selectedTags,
+      ageGroups: selectedAgeGroups,
+      weight: Number(weight) || 0,
+      weightUnit,
+      isPhysicalProduct,
+      contentType,
+      totalItems: Number(totalItems) || 1,
+      dimensions: {
+        length: Number(dimensions.length) || 0,
+        width: Number(dimensions.width) || 0,
+        height: Number(dimensions.height) || 0,
+        unit: dimensionUnit,
+      },
+      declaredValue: Number(declaredValue) || 0,
+      faqs,
+    };
+
+    try {
+      setIsSaving(true);
+      setSaveFeedback(null);
+      await onSave(product, featuredImage, media);
+      setSaveFeedback({
+        type: "success",
+        message: `Perfect! Product ${initialData ? "updated" : "created"} successfully.`,
+      });
+    } catch (error) {
+      setSaveFeedback({ type: "error", message: error.message || "Failed to save product." });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const addFaq = () => {
@@ -174,23 +240,34 @@ const CreateProduct = ({ onDiscard, onQuickAddBrand, brands = [], categories = [
 
   return (
     <div className="create-product-page container-fluid">
+      {saveFeedback && (
+        <div className={`product-save-feedback is-${saveFeedback.type}`} role={saveFeedback.type === "success" ? "status" : "alert"}>
+          <span className="product-save-feedback-icon" aria-hidden="true">
+            {saveFeedback.type === "success" ? <FaCheck /> : <FaTimes />}
+          </span>
+          <span>{saveFeedback.message}</span>
+          <button type="button" aria-label="Dismiss notification" onClick={() => setSaveFeedback(null)}>
+            <FaTimes aria-hidden="true" />
+          </button>
+        </div>
+      )}
       <header className="product-page-header">
         <div>
-          <h1>Add New Product</h1>
-          <p>Fill in product details, pricing, inventory and options</p>
+          <h1>{initialData ? "Edit Product" : "Add New Product"}</h1>
+          <p>{initialData ? `Product ID: #${initialData.id || initialData._id}` : "Fill in product details, pricing, inventory and options"}</p>
         </div>
         <div className="product-header-actions">
           <button type="button" className="btn btn-outline-secondary product-discard-button" onClick={onDiscard}>
             Discard
           </button>
-          <button type="submit" form="product-form" className="btn btn-primary product-save-button">
+          <button type="submit" form="product-form" className="btn btn-primary product-save-button" disabled={isSaving}>
             <FaSave aria-hidden="true" />
-            Save Product
+            {isSaving ? "Saving..." : "Save Product"}
           </button>
         </div>
       </header>
 
-      <form id="product-form" className="product-body" onSubmit={(event) => event.preventDefault()}>
+      <form id="product-form" className="product-body" onSubmit={handleSubmit}>
         <div className="product-main-column">
           <section className="product-card product-type-card">
             <label htmlFor="product-type" className="product-card-label">Product Type</label>
@@ -221,7 +298,7 @@ const CreateProduct = ({ onDiscard, onQuickAddBrand, brands = [], categories = [
                 <option>Heading 2</option>
                 <option>Heading 3</option>
               </select>
-              <div id="product-description" className="product-editor-content" contentEditable suppressContentEditableWarning data-placeholder="Write a detailed product description..." />
+              <div id="product-description" className="product-editor-content" contentEditable suppressContentEditableWarning data-placeholder="Write a detailed product description..." dangerouslySetInnerHTML={{ __html: initialData?.description || "" }} />
             </div>
           </section>
 
@@ -297,15 +374,15 @@ const CreateProduct = ({ onDiscard, onQuickAddBrand, brands = [], categories = [
             <div className="product-pricing-fields">
               <div>
                 <label htmlFor="product-price" className="form-label">Price <span>*</span></label>
-                <div className="product-currency-input"><span>₹</span><input id="product-price" className="form-control" type="number" min="0" step="0.01" placeholder="0.00" /></div>
+                <div className="product-currency-input"><span>₹</span><input id="product-price" className="form-control" type="number" min="0" step="0.01" defaultValue={initialData?.price ?? ""} placeholder="0.00" /></div>
               </div>
               <div>
                 <label htmlFor="compare-price" className="form-label">Compare at price</label>
-                <div className="product-currency-input"><span>₹</span><input id="compare-price" className="form-control" type="number" min="0" step="0.01" placeholder="0.00" /></div>
+                <div className="product-currency-input"><span>₹</span><input id="compare-price" className="form-control" type="number" min="0" step="0.01" defaultValue={initialData?.compareAtPrice ?? ""} placeholder="0.00" /></div>
               </div>
               <div>
                 <label htmlFor="cost-per-item" className="form-label">Cost per item</label>
-                <div className="product-currency-input"><span>₹</span><input id="cost-per-item" className="form-control" type="number" min="0" step="0.01" placeholder="0.00" /></div>
+                <div className="product-currency-input"><span>₹</span><input id="cost-per-item" className="form-control" type="number" min="0" step="0.01" defaultValue={initialData?.costPerItem ?? ""} placeholder="0.00" /></div>
                 <small>Customers won't see this</small>
               </div>
               <label className="product-tax-check">

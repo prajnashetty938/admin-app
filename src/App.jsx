@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BrowserRouter as Router,
   useLocation,
@@ -15,6 +15,10 @@ import CreateCategory from "./components/CreateCategory.jsx";
 import CategoriesPage from "./components/CategoriesPage.jsx";
 import CreateProduct from "./components/CreateProduct.jsx";
 import ProductsPage from "./components/ProductsPage.jsx";
+import BannersPage from "./components/BannersPage.jsx";
+import CreateBanner from "./components/CreateBanner.jsx";
+import SettingsPage from "./components/SettingsPage.jsx";
+import LoginPage from "./components/LoginPage.jsx";
 import "./App.css";
 
 const API_URL = "http://localhost:5000/api";
@@ -66,6 +70,8 @@ const pagePaths = {
   createCategory: "/categories/new",
   Brands: "/brands",
   createBrand: "/brands/new",
+  Banners: "/banners",
+  createBanner: "/banners/new",
   Authors: "/authors",
   Tags: "/tags",
   "Age Groups": "/age-groups",
@@ -73,6 +79,8 @@ const pagePaths = {
   Settings: "/settings",
   "Courier Partners": "/courier-partners",
   "Product Settings": "/product-settings",
+  "SMTP / Email Settings": "/smtp-email-settings",
+  "Payment Gateway Settings": "/payment-gateway-settings",
   Locations: "/locations",
   "Admin Users": "/admin-users",
 };
@@ -84,16 +92,35 @@ function AppContent() {
   const [brands, setBrands] = useState([]);
   const [loadingBrands, setLoadingBrands] = useState(false);
   const [editingBrand, setEditingBrand] = useState(null);
+  const [editingProduct, setEditingProduct] = useState(null);
   const [categories, setCategories] = useState(null);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [banners, setBanners] = useState([]);
+  const [loadingBanners, setLoadingBanners] = useState(false);
+  const [editingBanner, setEditingBanner] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+
+    if (location.pathname === "/login") {
+      if (token) {
+        navigate("/");
+      }
+      return;
+    }
+
+    if (!token) {
+      navigate("/login");
+    }
+  }, [location.pathname, navigate]);
 
   const routePage =
     Object.keys(pagePaths).find(
       (page) => pagePaths[page] === location.pathname
     ) || "Dashboard";
-  const activePage = ["createCategory", "createProduct"].includes(routePage)
-    ? routePage === "createCategory" ? "Categories" : "Products"
+  const activePage = ["createCategory", "createProduct", "createBanner"].includes(routePage)
+    ? routePage === "createCategory" ? "Categories" : routePage === "createProduct" ? "Products" : "Banners"
     : routePage;
 
   const loadBrands = async () => {
@@ -122,7 +149,7 @@ function AppContent() {
   }, [location.pathname]);
 
   useEffect(() => {
-    if (!["/categories", "/products", "/products/new"].includes(location.pathname)) return;
+    if (!["/categories", "/products", "/products/new", "/banners", "/banners/new"].includes(location.pathname)) return;
 
     const loadCategories = async () => {
       try {
@@ -173,6 +200,76 @@ function AppContent() {
       console.error("Create brand error:", error);
       throw error;
     }
+  };
+
+  const addProduct = async (product, featuredImage, media) => {
+    const formData = new FormData();
+    formData.append("product", JSON.stringify(product));
+    if (featuredImage) formData.append("featuredImage", featuredImage);
+    media.forEach((file) => formData.append("media", file));
+
+    const response = await fetch(`${API_URL}/products`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.error || data.message || "Failed to save product");
+    }
+
+    return data.product;
+  };
+
+  const updateProduct = async (productId, product, featuredImage, media) => {
+    const formData = new FormData();
+    formData.append("product", JSON.stringify(product));
+    if (featuredImage) formData.append("featuredImage", featuredImage);
+    media.forEach((file) => formData.append("media", file));
+
+    const response = await fetch(`${API_URL}/products/${productId}`, {
+      method: "PUT",
+      body: formData,
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.error || data.message || "Failed to update product");
+    }
+
+    return data.product;
+  };
+
+  const deleteProduct = async (productId) => {
+    const response = await fetch(`${API_URL}/products/${productId}`, { method: "DELETE" });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.error || data.message || "Failed to delete product");
+    }
+  };
+
+  const updateProductsStatus = async (productIds, status) => {
+    const response = await fetch(`${API_URL}/products/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productIds, status }),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.error || data.message || "Failed to update product statuses");
+    }
+  };
+
+  const openCreateProduct = () => {
+    setEditingProduct(null);
+    navigate("/products/new");
+  };
+
+  const openEditProduct = (product) => {
+    setEditingProduct(product);
+    navigate("/products/new");
   };
 
   const updateBrand = async (brandId, updatedBrand) => {
@@ -304,6 +401,135 @@ function AppContent() {
     navigate("/brands/new");
   };
 
+  const createBannerFormData = (bannerData) => {
+    const formData = new FormData();
+    formData.append(
+      "banner",
+      JSON.stringify({
+        title: bannerData.title,
+        subtitle: bannerData.subtitle,
+        destinationUrl: bannerData.destinationUrl,
+        ctaText: bannerData.ctaText,
+        category: bannerData.category,
+        position: bannerData.position,
+        sortOrder: bannerData.sortOrder,
+        active: bannerData.active,
+        images: bannerData.images || {},
+      })
+    );
+
+    if (bannerData.desktopImage) formData.append("desktopImage", bannerData.desktopImage);
+    if (bannerData.mobileImage) formData.append("mobileImage", bannerData.mobileImage);
+    if (bannerData.tabletImage) formData.append("tabletImage", bannerData.tabletImage);
+
+    return formData;
+  };
+
+  const loadBanners = async () => {
+    try {
+      setLoadingBanners(true);
+      const response = await fetch(`${API_URL}/banners`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("adminToken") || ""}`,
+        },
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch banners");
+      }
+
+      setBanners(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error(error);
+      setBanners([]);
+    } finally {
+      setLoadingBanners(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!["/banners", "/banners/new"].includes(location.pathname)) return;
+    loadBanners();
+  }, [location.pathname]);
+
+  const addBanner = async (bannerData) => {
+    const response = await fetch(`${API_URL}/banners`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken") || ""}`,
+      },
+      body: createBannerFormData(bannerData),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.error || data.message || "Failed to create banner");
+    }
+
+    setBanners((currentBanners) => [data.banner, ...currentBanners]);
+    navigate("/banners");
+  };
+
+  const updateBanner = async (bannerId, bannerData) => {
+    const response = await fetch(`${API_URL}/banners/${bannerId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken") || ""}`,
+      },
+      body: createBannerFormData(bannerData),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.error || data.message || "Failed to update banner");
+    }
+
+    setBanners((currentBanners) =>
+      currentBanners.map((banner) =>
+        banner._id === bannerId ? data.banner : banner
+      )
+    );
+
+    setEditingBanner(null);
+    navigate("/banners");
+  };
+
+  const deleteBanner = async (bannerId) => {
+    const confirmed = window.confirm("Are you sure you want to delete this banner?");
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`${API_URL}/banners/${bannerId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("adminToken") || ""}`,
+        },
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || "Failed to delete banner");
+      }
+
+      setBanners((currentBanners) =>
+        currentBanners.filter((banner) => banner._id !== bannerId)
+      );
+    } catch (error) {
+      console.error("Delete banner error:", error);
+      alert(error.message || "Failed to delete banner");
+    }
+  };
+
+  const openEditBanner = (banner) => {
+    setEditingBanner(banner);
+    navigate("/banners/new");
+  };
+
   const renderContent = () => {
     switch (routePage) {
       case "Dashboard":
@@ -313,10 +539,10 @@ function AppContent() {
         return <h3>Orders Page</h3>;
 
       case "Products":
-        return <ProductsPage onAdd={() => navigate("/products/new")} brands={brands} categories={categories || []} />;
+        return <ProductsPage onAdd={openCreateProduct} onEdit={openEditProduct} onDelete={deleteProduct} onBulkStatusChange={updateProductsStatus} brands={brands} categories={categories || []} />;
 
       case "createProduct":
-        return <CreateProduct onDiscard={() => navigate("/products")} onQuickAddBrand={(brand) => addBrand(brand, false)} brands={brands} categories={categories || []} />;
+        return <CreateProduct onDiscard={() => { setEditingProduct(null); navigate("/products"); }} onQuickAddBrand={(brand) => addBrand(brand, false)} onSave={editingProduct ? (...args) => updateProduct(editingProduct._id, ...args) : addProduct} initialData={editingProduct} brands={brands} categories={categories || []} />;
 
       case "Collections":
         return <ProductCollections setActivePage={setActivePage} />;
@@ -333,6 +559,39 @@ function AppContent() {
             onAdd={openCreateBrand}
             onEdit={openEditBrand}
             onDelete={deleteBrand}
+          />
+        );
+
+      case "Banners":
+        return loadingBanners ? (
+          <p>Loading banners...</p>
+        ) : (
+          <BannersPage
+            banners={banners}
+            onAdd={() => {
+              setEditingBanner(null);
+              navigate("/banners/new");
+            }}
+            onEdit={openEditBanner}
+            onDelete={deleteBanner}
+          />
+        );
+
+      case "createBanner":
+        return (
+          <CreateBanner
+            initialData={editingBanner}
+            mode={editingBanner ? "edit" : "create"}
+            categories={categories || []}
+            onBack={() => {
+              setEditingBanner(null);
+              navigate("/banners");
+            }}
+            onSubmit={
+              editingBanner
+                ? (payload) => updateBanner(editingBanner._id, payload)
+                : addBanner
+            }
           />
         );
 
@@ -395,13 +654,19 @@ function AppContent() {
         return <h3>Product Prices Page</h3>;
 
       case "Settings":
-        return <h3>Settings Page</h3>;
+        return <SettingsPage />;
 
       case "Courier Partners":
         return <h3>Courier Partners Page</h3>;
 
       case "Product Settings":
         return <h3>Product Settings Page</h3>;
+
+      case "SMTP / Email Settings":
+        return <h3>SMTP / Email Settings Page</h3>;
+
+      case "Payment Gateway Settings":
+        return <h3>Payment Gateway Settings Page</h3>;
 
       case "Locations":
         return <h3>Locations Page</h3>;
@@ -413,6 +678,10 @@ function AppContent() {
         return <h3>{activePage} Overview</h3>;
     }
   };
+
+  if (location.pathname === "/login") {
+    return <LoginPage />;
+  }
 
   return (
     <div style={{ display: "flex" }}>
